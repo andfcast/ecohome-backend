@@ -1,8 +1,18 @@
 const express = require('express');
+const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const productRoutes = require('./routes/product.routes');
+const messageRoutes = require('./routes/message.routes');
 
 const app = express();
+
+// Configuración de CORS para peticiones HTTP
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], // Permite peticiones desde React (Vite)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // Middleware para procesar JSON en el cuerpo de las peticiones
 app.use(express.json());
@@ -10,6 +20,7 @@ app.use(express.json());
 // Registro de rutas de la API
 app.use('/auth', authRoutes);
 app.use('/products', productRoutes);
+app.use('/messages', messageRoutes);
 
 // Ruta base de verificación
 app.get('/', (req, res) => {
