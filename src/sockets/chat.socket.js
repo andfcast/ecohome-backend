@@ -4,19 +4,27 @@ const db = require('../config/database');
 module.exports = (io) => {
   // Middleware de autenticación JWT para Sockets
   io.use((socket, next) => {
-    const token = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
+    // Extraer token desde auth o headers
+    const rawToken = socket.handshake.auth?.token || socket.handshake.headers?.authorization;
 
-    if (!token) {
+    if (!rawToken) {
+      console.error('❌ [Socket Auth] No se recibió ningún token');
       return next(new Error('Authentication error: Token no proporcionado'));
     }
 
     try {
-      const cleanToken = token.replace('Bearer ', '');
-      const decoded = jwt.verify(cleanToken, process.env.JWT_SECRET || 'secreto_super_seguro_ecohome_2026');
-      socket.user = decoded;
+      // Remover "Bearer " sin importar cuántas veces aparezca o si hay espacios extra
+      const cleanToken = rawToken.replace(/^Bearer\s+/i, '').replace(/^Bearer\s+/i, '').trim();
+
+      // Clave secreta (debe coincidir exactamente con la que usas en auth.controller.js)
+      const secret = process.env.JWT_SECRET || 'secreto_super_seguro_ecohome_2026';
+
+      const decoded = jwt.verify(cleanToken, secret);
+      socket.user = decoded; // Guardar usuario decodificado en la instancia del socket
       next();
     } catch (err) {
-      return next(new Error('Authentication error: Token inválido'));
+      console.error('❌ [Socket Auth Error Detallado]:', err.message);
+      return next(new Error(`Authentication error: Token inválido (${err.message})`));
     }
   });
 

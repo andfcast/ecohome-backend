@@ -63,7 +63,7 @@ const login = async (req, res) => {
       role: user.role
     };
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET || 'secreto_super_seguro_ecohome', {
+    const token = jwt.sign(payload, process.env.JWT_SECRET || 'secreto_super_seguro_ecohome_2026', {
       expiresIn: '8h'
     });
 
