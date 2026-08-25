@@ -4,7 +4,8 @@ const db = require('../config/database');
 const getAllProducts = async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT id, name, price, is_available, created_at, updated_at FROM products ORDER BY id ASC'
+      'SELECT p.id, p.name, p.price, p.is_available, p.created_at, p.updated_at, u.name AS creator '
+      + 'FROM products p INNER JOIN users u ON p.created_by = u.id ORDER BY p.created_at DESC'
     );
     res.status(200).json(result.rows);
   } catch (error) {
@@ -19,7 +20,8 @@ const getProductById = async (req, res) => {
 
   try {
     const result = await db.query(
-      'SELECT id, name, price, is_available, created_at, updated_at FROM products WHERE id = $1',
+      'SELECT p.id, p.name, p.price, p.is_available, p.created_at, p.updated_at, u.name AS creator '
+      + ' FROM products p INNER JOIN users u ON p.created_by = u.id WHERE p.id = $1',
       [id]
     );
 
@@ -38,6 +40,12 @@ const getProductById = async (req, res) => {
 const createProduct = async (req, res) => {
   const { name, price, is_available } = req.body;
 
+  const created_by = req.user?.id;
+
+  if (!created_by) {
+    return res.status(400).json({ message: 'No se pudo identificar el usuario creador en el token.' });
+  }
+
   if (!name || price === undefined) {
     return res.status(400).json({ message: 'El nombre y el precio del producto son obligatorios.' });
   }
@@ -46,10 +54,10 @@ const createProduct = async (req, res) => {
     const availability = is_available !== undefined ? is_available : true;
 
     const result = await db.query(
-      `INSERT INTO products (name, price, is_available) 
-       VALUES ($1, $2, $3) 
-       RETURNING id, name, price, is_available, created_at, updated_at`,
-      [name, price, availability]
+      `INSERT INTO products (name, price, is_available, created_by) 
+       VALUES ($1, $2, $3, $4) 
+       RETURNING id, name, price, is_available, created_at, updated_at, created_by`,
+      [name, price, availability, created_by]
     );
 
     res.status(201).json({

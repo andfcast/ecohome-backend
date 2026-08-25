@@ -33,9 +33,14 @@ CREATE TABLE IF NOT EXISTS products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
-    is_available BOOLEAN NOT NULL DEFAULT TRUE, -- Para marcar agotado o descontinuado
+    is_available BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER NOT NULL,
+    CONSTRAINT fk_products_created_by 
+        FOREIGN KEY (created_by) 
+        REFERENCES users(id) 
+        ON DELETE CASCADE
 );
 
 -- Función y Trigger para actualizar automáticamente el campo `updated_at` en productos
@@ -60,3 +65,8 @@ CREATE TABLE IF NOT EXISTS messages (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+INSERT INTO users (name, email, password_hash, role) VALUES ('Administrador', 'admin@ecohome.com', '$2b$10$AyfbZ/4L4REUO2Z77FSBQeMXZzdcrlQStj.JK9qhbP76EdV9gxKcK', 'admin');
+INSERT INTO users (name, email, password_hash, role) VALUES ('Cliente 1', 'cliente1@ecohome.com', '$2b$10$6Qhx6CoCiduzw3CKbr.eT.KCFBRgnQYcd5.VVLpalq1kys2YhmtkS', 'cliente');
+INSERT INTO users (name, email, password_hash, role) VALUES ('Cliente 2', 'cliente2@ecohome.com', '$2b$10$TYl3lqj.dNd1jPJfNVc68.Ex4BWl0nnwCB1lbQG1GnqufOT1rIAG6', 'cliente');
+INSERT INTO users (name, email, password_hash, role) VALUES ('Cliente 3', 'cliente3@ecohome.com', '$2b$10$V7TIh55r06lHTimujdd6NuKh3Zge81FpwJBk31lqohfqBK8Z1hHWW', 'cliente');
